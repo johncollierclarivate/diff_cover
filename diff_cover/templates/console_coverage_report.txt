@@ -9,11 +9,23 @@ Diff: {{ diff_name }}
 {% else %}
 {{ src_path }} (100%)
 {% endif %}
+{% if stats.conditions_percent_covered < 100 %}
+    Branch: ({{ stats.conditions_percent_covered|round(1) }}%): Missing branch coverage on lines {{ stats.condition_coverage_violation_lines|join(',') }}
+{% for condition_violation in stats.condition_coverage_messages %}
+     - Line {{ condition_violation }}
+{% endfor %}
+{% endif %}
 {% endfor %}
 -------------
+Line Coverage
 Total:   {{ total_num_lines }} line{{ total_num_lines|pluralize }}
 Missing: {{ total_num_violations }} line{{ total_num_violations|pluralize }}
 Coverage: {{ total_percent_covered }}%
+-------------
+Branch Coverage
+Total:   {{ total_num_conditions }} condition{{ total_num_conditions|pluralize }}
+Missing: {{ total_num_missed_conditions }} condition{{ total_num_missed_conditions|pluralize }}
+Branch Coverage: {{ total_percent_conditions_covered }}%
 -------------
 {% else %}
 No lines with coverage information in this diff.

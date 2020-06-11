@@ -392,6 +392,12 @@ class DiffCoverIntegrationTest(ToolsIntegrationBase):
         with self.assertRaises(CommandError):
             diff_cover_main(["diff-cover", "coverage.xml"])
 
+    def test_branch_coverage(self):
+        self._check_console_report(
+            "git_diff_mult.txt",
+            "branch_coverage_console_report.txt",
+            ["diff-cover", "coverage_with_branch.xml"],
+        )
 
 class DiffQualityIntegrationTest(ToolsIntegrationBase):
     """

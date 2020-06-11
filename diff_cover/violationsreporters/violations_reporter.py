@@ -12,6 +12,7 @@ from diff_cover.command_runner import run_command_for_code
 from diff_cover.git_path import GitPathTool
 from diff_cover.violationsreporters.base import (
     BaseViolationReporter,
+    ConditionCoverageViolation,
     Violation,
     RegexBasedDriver,
     QualityDriver,
@@ -195,6 +196,8 @@ class XmlCoverageReporter(BaseViolationReporter):
             # we take set union each time and can just start with the empty set
             measured = set()
 
+            condition_coverage_violations = None
+
             # Loop through the files that contain the xml roots
             for xml_document in self._xml_roots:
                 if xml_document.findall(".[@clover]"):
@@ -204,6 +207,7 @@ class XmlCoverageReporter(BaseViolationReporter):
                     )
                     _number = "num"
                     _hits = "count"
+                    _condition_coverage = None
                 elif xml_document.findall(".[@name]"):
                     # https://github.com/jacoco/jacoco/blob/master/org.jacoco.report/src/org/jacoco/report/xml/report.dtd
                     line_nodes = self._get_src_path_line_nodes_jacoco(
@@ -211,6 +215,13 @@ class XmlCoverageReporter(BaseViolationReporter):
                     )
                     _number = "nr"
                     _hits = "ci"
+                    def _condition_coverage(line_node):
+                        missed_branches = int(line_node.get("mb", 0))
+                        covered_branches = int(line_node.get("cb", 0))
+                        total_branches = missed_branches + covered_branches
+                        if total_branches > 0:
+                            return (missed_branches, total_branches)
+                        return (-1,0)
                 else:
                     # https://github.com/cobertura/web/blob/master/htdocs/xml/coverage-04.dtd
                     line_nodes = self._get_src_path_line_nodes_cobertura(
@@ -218,36 +229,56 @@ class XmlCoverageReporter(BaseViolationReporter):
                     )
                     _number = "number"
                     _hits = "hits"
+                    def _condition_coverage(line_node):
+                        if line_node.get("branch") == "true":
+                            val = line_node.get("condition-coverage", "")
+                            condition_coverage_expression = re.compile(r"^(\d+)% \((\d+)\/(\d+)\)$")
+                            match = condition_coverage_expression.match(val)
+                            if match is not None:
+                                (percentage,
+                                 covered_conditions,
+                                 total_conditions) = match.groups()
+                                return (int(total_conditions) - int(covered_conditions), int(total_conditions))
+                        return (-1,0)
                 if line_nodes is None:
                     continue
 
-                # First case, need to define violations initially
-                if violations is None:
-                    violations = {
-                        Violation(int(line.get(_number)), None)
-                        for line in line_nodes
+                new_violations = {
+                    Violation(int(line.get(_number)), None)
+                    for line in line_nodes
                         if int(line.get(_hits, 0)) == 0
                     }
 
+                # First case, need to define violations initially
+                if violations is None:
+                    violations = new_violations
                 # If we already have a violations set,
                 # take the intersection of the new
                 # violations set and its old self
                 else:
-                    violations = violations & {
-                        Violation(int(line.get(_number)), None)
-                        for line in line_nodes
-                        if int(line.get(_hits, 0)) == 0
-                    }
+                    violations = violations & new_violations
 
                 # Measured is the union of itself and the new measured
                 measured = measured | {int(line.get(_number)) for line in line_nodes}
+
+                new_condition_coverage_violations = {
+                    ConditionCoverageViolation(int(line.get(_number)), _condition_coverage(line)[0], _condition_coverage(line)[1])
+                    for line in line_nodes
+                    if _condition_coverage is not None and _condition_coverage(line)[0] != -1}
+                if condition_coverage_violations is None:
+                    condition_coverage_violations = new_condition_coverage_violations
+                else:
+                    condition_coverage_violations = condition_coverage_violations & new_condition_coverage_violations
 
             # If we don't have any information about the source file,
             # don't report any violations
             if violations is None:
                 violations = set()
 
-            self._info_cache[src_path] = (violations, measured)
+            if condition_coverage_violations is None:
+                condition_coverage_violations = set()
+
+            self._info_cache[src_path] = (violations, measured, condition_coverage_violations)
 
     def violations(self, src_path):
         """
@@ -266,6 +297,16 @@ class XmlCoverageReporter(BaseViolationReporter):
         self._cache_file(src_path)
         return self._info_cache[src_path][1]
 
+
+    def violations_condition_coverage(self, src_path):
+        """
+        See base class comments.
+        """
+
+        self._cache_file(src_path)
+
+        # Yield all lines not covered
+        return self._info_cache[src_path][2]
 
 pycodestyle_driver = RegexBasedDriver(
     name="pycodestyle",

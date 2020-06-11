@@ -196,7 +196,7 @@ def generate_coverage_report(
 
     # Generate the report
     reporter.generate_report(output_file)
-    return reporter.total_percent_covered()
+    return [reporter.total_percent_covered(), reporter.total_percent_conditions_covered()]
 
 
 def main(argv=None, directory=None):
@@ -227,12 +227,21 @@ def main(argv=None, directory=None):
         ignore_whitespace=arg_dict["ignore_whitespace"],
     )
 
-    if percent_covered >= fail_under:
-        return 0
+    if percent_covered[0] >= fail_under:
+        line_cov_res = 0
     else:
-        LOGGER.error("Failure. Coverage is below {}%.".format(fail_under))
-        return 1
+        LOGGER.error("Failure. Line coverage is below {}%.".format(fail_under))
+        line_cov_res = 1
 
+    if percent_covered[1] >= fail_under:
+        condition_cov_res = 0
+    else:
+        LOGGER.error("Failure. Branch coverage is below {}%.".format(fail_under))
+        condition_cov_res = 1
+
+    if line_cov_res == 0 and condition_cov_res == 0:
+        return 0
+    return 1
 
 if __name__ == "__main__":
     sys.exit(main())

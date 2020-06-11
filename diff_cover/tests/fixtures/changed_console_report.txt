@@ -4,7 +4,13 @@ Diff: origin/master...HEAD, staged and unstaged changes
 -------------
 test_src.txt (100%)
 -------------
+Line Coverage
 Total:   1 line
 Missing: 0 lines
 Coverage: 100%
+-------------
+Branch Coverage
+Total:   0 conditions
+Missing: 0 conditions
+Branch Coverage: 100%
 -------------

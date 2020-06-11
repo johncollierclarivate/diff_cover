@@ -1,0 +1,19 @@
+-------------
+Diff Coverage
+Diff: origin/master...HEAD, staged and unstaged changes
+-------------
+test_src.txt (40.0%): Missing lines 1-2,4,6,8,10
+    Branch: (62.5%): Missing branch coverage on lines 1,9
+     - Line 1: 1 of 2 branches covered
+     - Line 9: 0 of 2 branches covered
+-------------
+Line Coverage
+Total:   10 lines
+Missing: 6 lines
+Coverage: 40%
+-------------
+Branch Coverage
+Total:   8 conditions
+Missing: 3 conditions
+Branch Coverage: 62%
+-------------

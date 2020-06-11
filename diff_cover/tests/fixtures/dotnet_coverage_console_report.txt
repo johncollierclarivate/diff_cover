@@ -4,7 +4,13 @@ Diff: origin/master...HEAD, staged and unstaged changes
 -------------
 SampleApp/Sample.cs (0.0%): Missing lines 23-25
 -------------
+Line Coverage
 Total:   3 lines
 Missing: 3 lines
 Coverage: 0%
+-------------
+Branch Coverage
+Total:   0 conditions
+Missing: 0 conditions
+Branch Coverage: 100%
 -------------

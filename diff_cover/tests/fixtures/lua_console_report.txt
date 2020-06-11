@@ -4,7 +4,13 @@ Diff: origin/master...HEAD, staged and unstaged changes
 -------------
 scripts/maths.lua (50.0%): Missing lines 12
 -------------
+Line Coverage
 Total:   2 lines
 Missing: 1 line
 Coverage: 50%
+-------------
+Branch Coverage
+Total:   0 conditions
+Missing: 0 conditions
+Branch Coverage: 100%
 -------------

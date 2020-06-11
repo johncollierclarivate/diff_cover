@@ -13,6 +13,15 @@ from diff_cover.command_runner import execute, run_command_for_code
 
 Violation = namedtuple("Violation", "line, message")
 
+class ConditionCoverageViolation(object):
+    def __init__(self, line, missed, total):
+        self.line = line
+        self.missed = missed
+        self.total = total
+    def message(self):
+        return (str(self.line) + ": " + str(self.total - self.missed) + " of " + str(self.total) + " branches covered")
+    def __lt__(self, other):
+        return self.line < other.line
 
 class QualityReporterError(Exception):
     """
@@ -55,6 +64,9 @@ class BaseViolationReporter:
         provided by the diff.
         """
         return None
+
+    def violations_condition_coverage(self, src_path):
+        return set()
 
     def name(self):
         """

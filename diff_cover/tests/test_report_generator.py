@@ -287,19 +287,30 @@ class JsonReportGeneratorTest(BaseReportGeneratorTest):
                 "diff_name": "master",
                 "src_stats": {
                     "file1.py": {
+                        "condition_coverage_messages": [],
+                        "condition_coverage_violation_lines": [],
+                        "condition_coverage_violations": [],
+                        "conditions_percent_covered": 100,
                         "percent_covered": 66.66666666666667,
                         "violation_lines": [10, 11],
                         "violations": [[10, None], [11, None]],
                     },
                     "subdir/file2.py": {
+                        "condition_coverage_messages": [],
+                        "condition_coverage_violation_lines": [],
+                        "condition_coverage_violations": [],
+                        "conditions_percent_covered": 100,
                         "percent_covered": 66.66666666666667,
                         "violation_lines": [10, 11],
                         "violations": [[10, None], [11, None]],
-                    },
+                    }
                 },
+                "total_num_conditions": 0,
                 "total_num_lines": 12,
+                "total_num_missed_conditions": 0,
                 "total_num_violations": 4,
-                "total_percent_covered": 66,
+                "total_percent_conditions_covered": 100,
+                "total_percent_covered": 66
             }
         )
 
@@ -313,22 +324,27 @@ class JsonReportGeneratorTest(BaseReportGeneratorTest):
         self.set_violations("file.py", [])
         self.set_measured("file.py", [2])
 
-        expected = json.dumps(
-            {
-                "report_name": ["reports/coverage.xml"],
-                "diff_name": "master",
-                "src_stats": {
-                    "file.py": {
-                        "percent_covered": 100.0,
-                        "violation_lines": [],
-                        "violations": [],
+        expected = json.dumps({
+            "report_name": ["reports/coverage.xml"],
+            "diff_name": "master",
+            "src_stats": {
+                "file.py": {
+                    "percent_covered": 100.0,
+                    "violation_lines": [],
+                    "violations": [],
+                    "conditions_percent_covered": 100.0,
+                    "condition_coverage_messages": [],
+                    "condition_coverage_violation_lines": [],
+                    "condition_coverage_violations": []
                     }
                 },
-                "total_num_lines": 1,
-                "total_num_violations": 0,
-                "total_percent_covered": 100,
-            }
-        )
+            "total_num_conditions": 0,
+            "total_num_lines": 1,
+            "total_num_missed_conditions": 0,
+            "total_num_violations": 0,
+            "total_percent_conditions_covered": 100,
+            "total_percent_covered": 100
+        })
 
         self.assert_report(expected)
 
@@ -337,16 +353,17 @@ class JsonReportGeneratorTest(BaseReportGeneratorTest):
         # Have the dependencies return an empty report
         # (this is the default)
 
-        expected = json.dumps(
-            {
-                "report_name": ["reports/coverage.xml"],
-                "diff_name": "master",
-                "src_stats": {},
-                "total_num_lines": 0,
-                "total_num_violations": 0,
-                "total_percent_covered": 100,
-            }
-        )
+        expected = json.dumps({
+            "report_name": ["reports/coverage.xml"],
+            "diff_name": "master",
+            "src_stats": {},
+            "total_num_conditions": 0,
+            "total_num_lines": 0,
+            "total_num_missed_conditions": 0,
+            "total_num_violations": 0,
+            "total_percent_conditions_covered": 100,
+            "total_percent_covered": 100
+        })
 
         self.assert_report(expected)
 
@@ -370,9 +387,15 @@ class StringReportGeneratorTest(BaseReportGeneratorTest):
         file1.py (66.7%): Missing lines 10-11
         subdir/file2.py (66.7%): Missing lines 10-11
         -------------
+        Line Coverage
         Total:   12 lines
         Missing: 4 lines
         Coverage: 66%
+        -------------
+        Branch Coverage
+        Total:   0 conditions
+        Missing: 0 conditions
+        Branch Coverage: 100%
         -------------
         """
         ).strip()
@@ -395,9 +418,15 @@ class StringReportGeneratorTest(BaseReportGeneratorTest):
         -------------
         file.py (100%)
         -------------
+        Line Coverage
         Total:   1 line
         Missing: 0 lines
         Coverage: 100%
+        -------------
+        Branch Coverage
+        Total:   0 conditions
+        Missing: 0 conditions
+        Branch Coverage: 100%
         -------------
         """
         ).strip()
